@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Duolingo Clone - Ingliz tili</title>
+    <script src="https://telegram.org"></script>
+    <style>
+        :root {
+            --primary: #58cc02;
+            --primary-shadow: #58a700;
+            --secondary: #1cb0f6;
+            --secondary-shadow: #1899d6;
+            --danger: #ff4b4b;
+            --bg: #ffffff;
+            --text: #3c3c3c;
+            --border: #e5e5e5;
+        }
+        * { box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            margin: 0;
+            padding: 16px;
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            justify-content: space-between;
+            user-select: none;
+        }
+        /* Yuqori panel */
+        .header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .progress-container {
+            flex-grow: 1;
+            height: 16px;
+            background-color: var(--border);
+            border-radius: 10px;
+            overflow: hidden;
+        }
+        .progress-bar {
+            height: 100%;
+            width: 0%;
+            background-color: var(--primary);
+            transition: width 0.3s ease;
+        }
+        .hearts {
+            color: var(--danger);
+            font-weight: bold;
+            font-size: 18px;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+        /* Savol hududi */
+        .task-type {
+            font-size: 14px;
+            color: #777;
+            font-weight: bold;
+            text-transform: uppercase;
+            margin-bottom: 8px;
+        }
+        .question-title {
+            font-size: 22px;
+            font-weight: bold;
+            margin-bottom: 20px;
+        }
+        /* Ovoz tugmasi */
+        .audio-box {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        .speak-btn {
+            background-color: var(--secondary);
+            border: none;
+            border-bottom: 4px solid var(--secondary-shadow);
+            color: white;
+            width: 60px;
+            height: 60px;
+            border-radius: 16px;
+            font-size: 28px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .speak-btn:active {
+            transform: translateY(2px);
+            border-bottom-width: 2px;
+        }
+        /* Rasm kartochkasi */
+        .image-card {
+            font-size: 85px;
+            text-align: center;
+            background: #f7f7f7;
+            border: 2px solid var(--border);
+            border-radius: 20px;
+            padding: 20px;
+            margin-bottom: 20px;
+            position: relative;
+        }
+        .mini-speak {
+            position: absolute;
+            bottom: 10px;
+            right: 10px;
+            background: var(--secondary);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 36px;
+            height: 36px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+        /* Gapdagi 3 nuqta (bo'sh joy) */
+        .sentence-box {
+            font-size: 20px;
+            line-height: 1.6;
+            background: #f9f9f9;
+            padding: 15px;
+            border-radius: 14px;
+            border: 2px solid var(--border);
+            margin-bottom: 20px;
+        }
+        .blank-slot {
+            display: inline-block;
+            min-width: 80px;
+            border-bottom: 3px solid #afafaf;
+            text-align: center;
+            color: var(--secondary);
+            font-weight: bold;
+            padding: 0 8px;
+        }
+        /* Yozish maydoni (Input) */
+        .text-input {
+            width: 100%;
+            padding: 15px;
+            font-size: 18px;
+            border: 2px solid var(--border);
+            border-radius: 14px;
+            background: #f7f7f7;
+            outline: none;
+            font-weight: 600;
+        }
+        .text-input:focus {
+            border-color: var(--secondary);
+            background: #fff;
+        }
+        /* Variant tugmalari */
+        .options-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
+        .options-list {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        .option-btn {
+            background: white;
+            border: 2px solid var(--border);
+            border-bottom: 4px solid var(--border);
+            border-radius: 14px;
+            padding: 14px;
+            font-size: 17px;
+            font-weight: 600;
+            color: var(--text);
+            cursor: pointer;
+            text-align: center;
+        }
+        .option-btn.selected {
+            background-color: #ddf4ff;
+            border-color: #84d8ff;
+            color: #1899d6;
+        }
+        /* So'z yig'ish (Word Bank) */
+        .answer-area {
+            min-height: 55px;
+            border-bottom: 2px solid var(--border);
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            padding-bottom: 10px;
+            margin-bottom: 20px;
+        }
+        .word-bank {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            justify-content: center;
+        }
+        .word-chip {
+            background: white;
+            border: 2px solid var(--border);
+            border-bottom: 4px solid var(--border);
+            border-radius: 12px;
+            padding: 10px 14px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+        /* Tekshirish tugmasi */
+        .check-btn {
+            background-color: var(--primary);
+            border: none;
+            border-bottom: 4px solid var(--primary-shadow);
+            color: white;
+            padding: 16px;
+            border-radius: 14px;
+            font-size: 18px;
+            font-weight: bold;
+            width: 100%;
+            cursor: pointer;
+            text-transform: uppercase;
+        }
+        .check-btn:disabled {
+            background-color: var(--border);
+            border-bottom-color: #cecece;
+            color: #afafaf;
+        }
+        /* Natija oynasi */
+        .feedback {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            padding: 20px;
+            display: none;
+            flex-direction: column;
+            gap: 12px;
+            z-index: 100;
+            animation: slideUp 0.2s ease;
+        }
+        .feedback.correct { background-color: #d7ffb8; color: #58a700; }
+        .feedback.wrong { background-color: #ffdfe0; color: #ea2b2b; }
+        @keyframes slideUp {
+            from { transform: translateY(100%); }
+            to { transform: translateY(0); }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <div class="progress-container">
+            <div class="progress-bar" id="progressBar"></div>
+        </div>
+        <div class="hearts">❤️ <span id="heartsCount">5</span></div>
+    </div>
+
+    <div id="quizContent" style="flex-grow: 1; display: flex; flex-direction: column; justify-content: center;">
+        </div>
+
+    <button class="check-btn" id="checkBtn" disabled onclick="checkAnswer()">Tekshirish</button>
+
+    <div class="feedback" id="feedbackBox">
+        <h2 id="feedbackTitle" style="margin:0;"></h2>
+        <p id="feedbackDesc" style="margin:0; font-weight: 500;"></p>
+        <button class="check-btn" id="nextBtn" onclick="nextQuestion()">Davom etish</button>
+    </div>
+
+    <script>
+        const tg = window.Telegram.WebApp;
+        tg.expand();
+
+        // Inglizcha matnni ovoz chiqarib o'qish funksiyasi
+        function speak(text) {
+            if ('speechSynthesis' in window) {
+                window.speechSynthesis.cancel(); // Oldingi ovozni to'xtatish
+                const utterance = new SpeechSynthesisUtterance(text);
+                utterance.lang = 'en-US'; // Amerika inglizchasi talaffuzi
+                utterance.rate = 0.9; // Biroz sekin va tushunarli tezlik
+                window.speechSynthesis.speak(utterance);
+            }
+        }
+
+        // Har xil turdagi mashqlar bazasi
+        const lessons = [
+            {
+                type: "fill_blank",
+                taskName: "Bo'sh joyni to'ldiring",
+                sentenceBefore: "I drink",
+                sentenceAfter: "every morning.",
+                audioFull: "I drink coffee every morning",
+                options: ["coffee", "book", "table", "run"],
+                answer: "coffee"
+            },
+            {
+                type: "image_input",
+                taskName: "Rasmdagi narsaning nomini ingliz tilida yozing",
+                image: "🍎",
+                hintAudio: "Apple",
+                placeholder: "Masalan: Banana",
+                answer: "apple"
+            },
+            {
+                type: "audio_choice",
+                taskName: "Eshitib, to'g'ri rasmni tanlang",
+                audioText: "Cat",
+                options: [
+                    { label: "🐶 Dog", value: "dog" },
+                    { label: "🐱 Cat", value: "cat" },
+                    { label: "🐦 Bird", value: "bird" },
+                    { label: "🐟 Fish", value: "fish" }
+                ],
+                answer: "cat"
+            },
+            {
+                type: "word_order",
+                taskName: "So'zlardan to'g'ri gap tuzing",
+                prompt: "Men ingliz tilini o'rganyapman",
